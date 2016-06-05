@@ -1,0 +1,20 @@
+sudo: required
+
+services:
+  - docker
+
+script:
+  - |
+    set -e
+    for path in `find . -name Dockerfile`; do
+        echo $path
+        docker run --rm -i pdericson/hadolint < $path
+    done
+  - |
+    set -e
+    if [ "$TRAVIS_BRANCH" = master -a "$TRAVIS_PULL_REQUEST" = false ]; then
+        for path in `find . -name Dockerfile`; do
+            echo $path
+            docker run --rm -i mesoscloud/ubuntu:`basename $(dirname $path)` sh -c "apt-get update && test `apt-get -s upgrade | grep ^Inst | wc -l` -eq 0"
+        done
+    fi
